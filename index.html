@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커스텀 돌림판 웹사이트</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .input-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .sector-inputs {
+            margin-top: 10px;
+        }
+        .sector-inputs input {
+            width: 200px; /* 입력 필드 크기 증가 */
+            margin: 5px;
+        }
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: none; /* 처음엔 숨김 */
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(red 0% 50%, blue 50% 100%); /* 초기 예시 */
+            transition: transform 2.5s ease-out; /* 속도 빠르게: 2.5초 */
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .sector-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px; /* 라벨 너비 조정 */
+            text-align: right; /* 바깥쪽 정렬 */
+            font-size: 14px;
+            color: white;
+            pointer-events: none;
+        }
+        .label-text {
+            display: inline-block;
+            transform: translateX(40px); /* 중심에서 바깥으로 이동 (반경 70% 정도) */
+        }
+        .arrow {
+            position: absolute;
+            bottom: -20px; /* 아래쪽으로 이동 */
+            left: 50%;
+            transform: translateX(-50%) rotate(180deg); /* 180도 회전 */
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid black; /* 원래 border-bottom 유지, 회전으로 위 향하게 */
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .result {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <label for="sector-count">돌림판 칸 개수 (2~20):</label>
+        <input type="number" id="sector-count" min="2" max="20" value="8">
+        <button class="btn" onclick="generateSectorInputs()">입력 필드 생성</button>
+        <div class="sector-inputs" id="sector-inputs"></div>
+        <button class="btn" onclick="createWheel()">돌림판 생성</button>
+    </div>
+    <div class="wheel-container" id="wheel-container">
+        <div class="wheel" id="wheel"></div>
+        <div class="arrow"></div>
+    </div>
+    <button class="btn" id="spin-btn" onclick="spinWheel()" style="display:none;">돌리기</button>
+    <div class="result" id="result"></div>
+
+    <script>
+        let sectors = [];
+        const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'pink', 'cyan', 'magenta', 'lime', 'teal', 'purple', 'brown', 'gray', 'black', 'white', 'olive', 'navy', 'maroon']; // 색상 풀
+
+        function generateSectorInputs() {
+            const count = parseInt(document.getElementById('sector-count').value);
+            const inputsDiv = document.getElementById('sector-inputs');
+            inputsDiv.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `칸 ${i+1} 이름`;
+                inputsDiv.appendChild(input);
+            }
+        }
+
+        function createWheel() {
+            const countInput = document.getElementById('sector-count');
+            const count = parseInt(countInput.value);
+            const inputs = document.querySelectorAll('#sector-inputs input');
+            sectors = Array.from(inputs).map(input => input.value || `칸 ${Array.from(inputs).indexOf(input)+1}`);
+
+            if (sectors.length !== count) return alert('모든 칸 이름을 입력하세요!');
+
+            const wheel = document.getElementById('wheel');
+            const container = document.getElementById('wheel-container');
+            const spinBtn = document.getElementById('spin-btn');
+
+            // 동적 conic-gradient 생성
+            let gradient = '';
+            const angle = 100 / count;
+            for (let i = 0; i < count; i++) {
+                gradient += `${colors[i % colors.length]} ${i * angle}% ${(i + 1) * angle}%, `;
+            }
+            gradient = gradient.slice(0, -2); // 마지막 쉼표 제거
+            wheel.style.background = `conic-gradient(${gradient})`;
+
+            // 섹터 라벨 추가
+            wheel.innerHTML = ''; // 기존 라벨 제거
+            for (let i = 0; i < count; i++) {
+                const label = document.createElement('div');
+                label.className = 'sector-label';
+                const rotation = (360 / count * i) + (180 / count); // 섹터 중앙
+                label.style.transform = `rotate(${rotation}deg)`;
+                const textSpan = document.createElement('span');
+                textSpan.className = 'label-text';
+                textSpan.style.transform = `rotate(-${rotation}deg)`; // counter-rotate로 텍스트 똑바로
+                textSpan.innerText = sectors[i];
+                label.appendChild(textSpan);
+                wheel.appendChild(label);
+            }
+
+            container.style.display = 'block';
+            spinBtn.style.display = 'block';
+            countInput.disabled = true; // 생성 후 수정 방지
+        }
+
+        function spinWheel() {
+            const wheel = document.getElementById('wheel');
+            const result = document.getElementById('result');
+            const randomDegree = Math.floor(Math.random() * 360) + 1440; // 최소 4바퀴로 더 동적하게
+            wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+            setTimeout(() => {
+                // 화살표가 180도 회전됐으니 오프셋 추가 (180도 shift)
+                let adjustedDegree = (randomDegree + 180) % 360;
+                const selectedIndex = Math.floor((sectors.length - (adjustedDegree / 360) * sectors.length) % sectors.length);
+                const selected = sectors[selectedIndex];
+                result.textContent = `당첨: ${selected}!`;
+            }, 2500); // 애니메이션 시간과 맞춤 (2.5초)
+        }
+    </script>
+</body>
+</html>
