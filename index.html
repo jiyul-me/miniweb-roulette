@@ -3,173 +3,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>커스텀 돌림판 웹사이트</title>
+    <title>돌림판</title>
     <style>
+        /* --- 기본 스타일 --- */
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
         }
-        .input-container {
-            margin-bottom: 20px;
+
+        .main-title {
             text-align: center;
-        }
-        .sector-inputs {
-            margin-top: 10px;
-        }
-        .sector-inputs input {
-            width: 200px; /* 입력 필드 크기 증가 */
-            margin: 5px;
-        }
-        .wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            display: none; /* 처음엔 숨김 */
-        }
-        .wheel {
             width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(red 0% 50%, blue 50% 100%); /* 초기 예시 */
-            transition: transform 2.5s ease-out; /* 속도 빠르게: 2.5초 */
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* --- 룰렛 영역 --- */
+        .roulette-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 300px;
+            max-width: 500px;
+        }
+        
+        .roulette-container {
             position: relative;
+            width: 100%;
+            padding-top: 100%; /* 1:1 비율 유지 */
+            margin-bottom: 20px;
         }
-        .sector-label {
+
+        .pointer {
             position: absolute;
-            top: 50%;
+            top: -15px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px; /* 라벨 너비 조정 */
-            text-align: right; /* 바깥쪽 정렬 */
-            font-size: 14px;
-            color: white;
-            pointer-events: none;
-        }
-        .label-text {
-            display: inline-block;
-            transform: translateX(40px); /* 중심에서 바깥으로 이동 (반경 70% 정도) */
-        }
-        .arrow {
-            position: absolute;
-            bottom: -20px; /* 아래쪽으로 이동 */
-            left: 50%;
-            transform: translateX(-50%) rotate(180deg); /* 180도 회전 */
+            transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid black; /* 원래 border-bottom 유지, 회전으로 위 향하게 */
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #E87A90;
+            z-index: 10;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
         }
-        .btn {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #4CAF50;
+
+        #rouletteCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        #spinButton {
+            background-color: #007BFF; 
             color: white;
             border: none;
-            border-radius: 5px;
-            margin: 10px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
         }
-        .result {
-            text-align: center;
-            font-size: 20px;
+
+        #spinButton:hover {
+            background-color: #0056b3;
+        }
+
+        #spinButton:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* --- 당첨 결과 표시 스타일 --- */
+        #winnerDisplay {
             margin-top: 20px;
+            padding: 15px 25px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            min-width: 250px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #winnerDisplay.show {
+            opacity: 1;
+        }
+
+        /* --- 설정 영역 --- */
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .controls-section h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* 슬라이더 */
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        input[type="range"]:disabled {
+            cursor: not-allowed;
+        }
+
+        #playerCountDisplay {
+            font-weight: bold;
+            color: #007BFF;
+            font-size: 1.1rem;
+        }
+
+        /* 이름 입력 필드 */
+        #nameInputs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        #nameInputs input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; 
+            font-size: 1rem;
+        }
+        
+        #nameInputs input[type="text"]::placeholder {
+            color: #aaa;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 800px) {
+            .main-title {
+                font-size: 2rem;
+            }
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .roulette-section, .controls-section {
+                width: 100%;
+                max-width: 500px;
+            }
+            .roulette-section {
+                order: 1; 
+            }
+            .controls-section {
+                order: 2; 
+            }
         }
     </style>
 </head>
 <body>
-    <div class="input-container">
-        <label for="sector-count">돌림판 칸 개수 (2~20):</label>
-        <input type="number" id="sector-count" min="2" max="20" value="8">
-        <button class="btn" onclick="generateSectorInputs()">입력 필드 생성</button>
-        <div class="sector-inputs" id="sector-inputs"></div>
-        <button class="btn" onclick="createWheel()">돌림판 생성</button>
+
+    <h1 class="main-title">돌림판</h1>
+
+    <div class="container">
+        <div class="roulette-section">
+            <div class="roulette-container">
+                <div class="pointer"></div>
+                <canvas id="rouletteCanvas" width="500" height="500"></canvas>
+            </div>
+            <button id="spinButton">돌리기!</button>
+            <div id="winnerDisplay"></div>
+        </div>
+
+        <div class="controls-section">
+            <h2>돌림판 설정</h2>
+            
+            <div class="control-group">
+                <label for="playerCount">참여 이름: <span id="playerCountDisplay">3명</span></label>
+                <input type="range" id="playerCount" min="2" max="10" value="3">
+            </div>
+
+            <div class="control-group">
+                <label>이름 입력</label>
+                <div id="nameInputs">
+                    </div>
+            </div>
+        </div>
     </div>
-    <div class="wheel-container" id="wheel-container">
-        <div class="wheel" id="wheel"></div>
-        <div class="arrow"></div>
-    </div>
-    <button class="btn" id="spin-btn" onclick="spinWheel()" style="display:none;">돌리기</button>
-    <div class="result" id="result"></div>
 
     <script>
-        let sectors = [];
-        const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'pink', 'cyan', 'magenta', 'lime', 'teal', 'purple', 'brown', 'gray', 'black', 'white', 'olive', 'navy', 'maroon']; // 색상 풀
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM 요소
+            const canvas = document.getElementById('rouletteCanvas');
+            const ctx = canvas.getContext('2d');
+            const spinButton = document.getElementById('spinButton');
+            const slider = document.getElementById('playerCount');
+            const playerCountDisplay = document.getElementById('playerCountDisplay');
+            const nameInputsContainer = document.getElementById('nameInputs');
+            const winnerDisplay = document.getElementById('winnerDisplay');
 
-        function generateSectorInputs() {
-            const count = parseInt(document.getElementById('sector-count').value);
-            const inputsDiv = document.getElementById('sector-inputs');
-            inputsDiv.innerHTML = '';
-            for (let i = 0; i < count; i++) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.placeholder = `칸 ${i+1} 이름`;
-                inputsDiv.appendChild(input);
-            }
-        }
+            // 기본값
+            const defaultFlowerNames = [
+                '장미', '백합', '튤립', '국화', '민들레', '해바라기', '코스모스', '진달래', '벚꽃', '수국'
+            ];
+            
+            // 룰렛 색상
+            const colors = [
+                '#FF6F61', '#FFB627', '#FFEA00', '#8BD346', '#00BFFF',
+                '#4169E1', '#8A2BE2', '#FF69B4', '#A020F0', '#FF1493'
+            ];
 
-        function createWheel() {
-            const countInput = document.getElementById('sector-count');
-            const count = parseInt(countInput.value);
-            const inputs = document.querySelectorAll('#sector-inputs input');
-            sectors = Array.from(inputs).map(input => input.value || `칸 ${Array.from(inputs).indexOf(input)+1}`);
+            let options = [];
+            let currentRotation = 0;
+            let isSpinning = false;
+            let winnerDisplayTimeout;
 
-            if (sectors.length !== count) return alert('모든 칸 이름을 입력하세요!');
+            // 1. 인원 수에 맞게 이름 입력 필드 생성
+            function generateNameInputs(count) {
+                nameInputsContainer.innerHTML = ''; 
+                options = []; 
 
-            const wheel = document.getElementById('wheel');
-            const container = document.getElementById('wheel-container');
-            const spinBtn = document.getElementById('spin-btn');
+                for (let i = 0; i < count; i++) {
+                    const defaultName = defaultFlowerNames[i % defaultFlowerNames.length];
+                    options.push(defaultName); 
 
-            // 동적 conic-gradient 생성
-            let gradient = '';
-            const angle = 100 / count;
-            for (let i = 0; i < count; i++) {
-                gradient += `${colors[i % colors.length]} ${i * angle}% ${(i + 1) * angle}%, `;
-            }
-            gradient = gradient.slice(0, -2); // 마지막 쉼표 제거
-            wheel.style.background = `conic-gradient(${gradient})`;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = defaultName;
+                    input.dataset.index = i;
+                    
+                    input.addEventListener('input', (e) => {
+                        options[i] = e.target.value || e.target.placeholder;
+                        drawRouletteWheel(); 
+                    });
 
-            // 섹터 라벨 추가
-            wheel.innerHTML = ''; // 기존 라벨 제거
-            for (let i = 0; i < count; i++) {
-                const label = document.createElement('div');
-                label.className = 'sector-label';
-                const rotation = (360 / count * i) + (180 / count); // 섹터 중앙
-                label.style.transform = `rotate(${rotation}deg)`;
-                const textSpan = document.createElement('span');
-                textSpan.className = 'label-text';
-                textSpan.style.transform = `rotate(-${rotation}deg)`; // counter-rotate로 텍스트 똑바로
-                textSpan.innerText = sectors[i];
-                label.appendChild(textSpan);
-                wheel.appendChild(label);
+                    nameInputsContainer.appendChild(input);
+                }
             }
 
-            container.style.display = 'block';
-            spinBtn.style.display = 'block';
-            countInput.disabled = true; // 생성 후 수정 방지
-        }
+            // 2. 룰렛 그리기 (*** 수정된 부분 ***)
+            function drawRouletteWheel() {
+                const numOptions = options.length;
+                if (numOptions === 0) return;
 
-        function spinWheel() {
-            const wheel = document.getElementById('wheel');
-            const result = document.getElementById('result');
-            const randomDegree = Math.floor(Math.random() * 360) + 1440; // 최소 4바퀴로 더 동적하게
-            wheel.style.transform = `rotate(${randomDegree}deg)`;
+                const arcSize = (2 * Math.PI) / numOptions;
+                const canvasSize = canvas.width;
+                const center = canvasSize / 2;
+                const radius = center - 20;
+                const startDrawingAngle = -Math.PI / 2; 
 
-            setTimeout(() => {
-                // 화살표가 180도 회전됐으니 오프셋 추가 (180도 shift)
-                let adjustedDegree = (randomDegree + 180) % 360;
-                const selectedIndex = Math.floor((sectors.length - (adjustedDegree / 360) * sectors.length) % sectors.length);
-                const selected = sectors[selectedIndex];
-                result.textContent = `당첨: ${selected}!`;
-            }, 2500); // 애니메이션 시간과 맞춤 (2.5초)
-        }
+                ctx.clearRect(0, 0, canvasSize, canvasSize);
+                
+                const fontSize = 16;
+                ctx.font = `bold ${fontSize}px Arial`;
+
+                for (let i = 0; i < numOptions; i++) {
+                    const segmentStartAngle = startDrawingAngle + i * arcSize;
+
+                    // 1) 세그먼트(조각) 그리기
+                    ctx.beginPath();
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.moveTo(center, center);
+                    ctx.arc(center, center, radius, segmentStartAngle, segmentStartAngle + arcSize);
+                    ctx.lineTo(center, center);
+                    ctx.fill();
+
+                    ctx.save();
+                    
+                    // 2) 텍스트를 위한 좌표계 설정
+                    const textAngle = segmentStartAngle + arcSize / 2;
+                    const textX = center + (radius / 1.5) * Math.cos(textAngle);
+                    const textY = center + (radius / 1.5) * Math.sin(textAngle);
+                    
+                    ctx.translate(textX, textY);
+                    ctx.rotate(textAngle + Math.PI / 2); 
+
+                    // 3) 텍스트 그리기 (배경 포함)
+                    const text = options[i];
+                    const textMetrics = ctx.measureText(text);
+                    const textWidth = textMetrics.width;
+                    const textHeight = fontSize * 1.2; // 폰트 크기 기반 높이
+
+                    // [수정] 패딩 값 정의
+                    const hPadding = 10; // 좌우 여백 (양쪽 합 10)
+                    const vPadding = 8;  // 상하 여백 (양쪽 합 8)
+                    const borderRadius = 5; // 모서리 둥글기 5px
+
+                    const rectWidth = textWidth + hPadding;
+                    const rectHeight = textHeight + vPadding;
+                    const rectX = -rectWidth / 2;
+                    const rectY = -rectHeight / 2; // (0,0)을 기준으로 중앙 배치
+                    
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // [수정] fillRect -> roundRect로 변경
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.beginPath(); // 경로 시작
+                    ctx.roundRect(rectX, rectY, rectWidth, rectHeight, borderRadius);
+                    ctx.fill(); // 채우기
+
+                    // 텍스트 그리기 (흰색)
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(text, 0, 0); // (0,0)에 정확히 중앙 정렬
+
+                    ctx.restore();
+                }
+            }
+
+            // 3. 룰렛 돌리기
+            function spin() {
+                if (isSpinning) return;
+                isSpinning = true;
+                spinButton.disabled = true;
+                slider.disabled = true; 
+                
+                clearTimeout(winnerDisplayTimeout);
+                winnerDisplay.classList.remove('show');
+                winnerDisplay.textContent = '';
+
+
+                const randomExtraRotation = Math.random() * 360;
+                const totalRotation = 360 * 5 + randomExtraRotation;
+                const newRotation = currentRotation + totalRotation;
+
+                canvas.style.transition = 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)';
+                canvas.style.transform = `rotate(${newRotation}deg)`;
+
+                setTimeout(() => {
+                    canvas.style.transition = 'none';
+                    
+                    const finalAngle = newRotation % 360;
+                    currentRotation = finalAngle;
+                    canvas.style.transform = `rotate(${finalAngle}deg)`;
+
+                    const numOptions = options.length;
+                    const arcSizeDeg = 360 / numOptions;
+                    const pointerAngle = (360 - finalAngle) % 360; 
+                    const winningIndex = Math.floor(pointerAngle / arcSizeDeg);
+                    
+                    winnerDisplay.textContent = `🎉 ${options[winningIndex]} 님 당첨! 🎉`;
+                    winnerDisplay.classList.add('show');
+                    
+                    winnerDisplayTimeout = setTimeout(() => {
+                        winnerDisplay.classList.remove('show');
+                    }, 5000); 
+
+                    isSpinning = false;
+                    spinButton.disabled = false;
+                    slider.disabled = false; 
+                    
+                }, 5000); 
+            }
+
+            // --- 이벤트 리스너 연결 ---
+
+            // 슬라이더 조작 시
+            slider.addEventListener('input', (e) => {
+                canvas.style.transition = 'none';
+                canvas.style.transform = 'rotate(0deg)';
+                currentRotation = 0;
+                
+                const count = parseInt(e.target.value);
+                playerCountDisplay.textContent = `${count}명`;
+                generateNameInputs(count);
+                drawRouletteWheel();
+
+                clearTimeout(winnerDisplayTimeout);
+                winnerDisplay.classList.remove('show');
+                winnerDisplay.textContent = '';
+            });
+
+            // 돌리기 버튼 클릭 시
+            spinButton.addEventListener('click', spin);
+
+            // --- 초기화 실행 ---
+            function init() {
+                const initialCount = parseInt(slider.value);
+                playerCountDisplay.textContent = `${initialCount}명`;
+                generateNameInputs(initialCount);
+                drawRouletteWheel();
+            }
+
+            init();
+        });
     </script>
 </body>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=511342205"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '511342205');
+</script>
 </html>
+
