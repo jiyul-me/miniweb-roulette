@@ -50,13 +50,10 @@
         <p class="page-subtitle">이름을 클릭하면 사다리를 타고 내려갑니다 — 결과는 끝까지 비밀</p>
 
         <div class="layout-stack">
+            <div id="entryPanel"></div>
+
             <section class="card" aria-label="사다리타기 게임">
                 <div class="tool-controls">
-                    <div class="stepper" id="ladderWinnerStepper">
-                        <button type="button" data-act="minus" aria-label="당첨 개수 줄이기">−</button>
-                        <span class="stepper-value" id="ladderWinnerValue">당첨 1개</span>
-                        <button type="button" data-act="plus" aria-label="당첨 개수 늘리기">+</button>
-                    </div>
                     <button id="editLabelsBtn" class="btn btn-ghost btn-sm" type="button">결과 수정</button>
                     <div class="spacer"></div>
                     <button id="revealAllBtn" class="btn btn-ghost btn-sm" type="button">모두 공개</button>
@@ -70,14 +67,12 @@
                         <div class="ladder-row" id="ladderBottom"></div>
                     </div>
                 </div>
+                <div class="ladder-results" id="ladderResults" hidden></div>
                 <div class="tool-notice" id="ladderNotice" hidden></div>
                 <p class="hint" id="ladderHint"></p>
             </section>
 
-            <div class="side-grid">
-                <div id="entryPanel"></div>
-                <div id="historyPanel"></div>
-            </div>
+            <div id="historyPanel"></div>
         </div>
     </main>
 

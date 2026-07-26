@@ -130,7 +130,7 @@
             id: typeof it.id === 'string' && it.id ? it.id : uid(),
             tool: it.tool === 'roulette' || it.tool === 'ladder' || it.tool === 'lots' ? it.tool : 'roulette',
             ts: isFinite(Number(it.ts)) ? Number(it.ts) : Date.now(),
-            text: String(it.text).slice(0, 200)
+            text: String(it.text).slice(0, 1000)
           });
         }
       }
@@ -282,7 +282,7 @@
     },
 
     logHistory: function (tool, text) {
-      history.unshift({ id: uid(), tool: tool, ts: Date.now(), text: String(text).slice(0, 200) });
+      history.unshift({ id: uid(), tool: tool, ts: Date.now(), text: String(text).slice(0, 1000) });
       if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
       saveHistory();
     },

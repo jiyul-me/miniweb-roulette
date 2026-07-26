@@ -8,8 +8,8 @@
   var ROW_GAP = 26;
   var PAD_Y = 16;
 
-  var canvas, ctx, topRow, bottomRow, innerEl, scrollEl, noticeEl, hintEl;
-  var stepperValue, revealAllBtn, rebuildBtn, editLabelsBtn;
+  var canvas, ctx, topRow, bottomRow, innerEl, scrollEl, noticeEl, hintEl, resultsEl;
+  var revealAllBtn, rebuildBtn, editLabelsBtn;
   var labelsDialog, labelsInputs, labelsSaveBtn, labelsResetBtn, labelsCancelBtn;
 
   /* 게임 상태 */
@@ -21,6 +21,8 @@
   var outcomes = [];       /* 플레이어 i가 도착하는 슬롯 */
   var revealedPlayers = [];
   var revealedSlots = [];
+  var slotOwner = [];      /* 슬롯 → 그 슬롯에 도착하는 플레이어 인덱스 */
+  var revealOrder = [];    /* 공개된 순서대로 플레이어 인덱스 */
   var anims = [];          /* {i, t0, dur} 진행 중 경로 애니메이션 */
   var logged = false;
   var colW = MIN_COL_W;
@@ -38,7 +40,7 @@
     scrollEl = document.querySelector('.ladder-scroll');
     noticeEl = document.getElementById('ladderNotice');
     hintEl = document.getElementById('ladderHint');
-    stepperValue = document.getElementById('ladderWinnerValue');
+    resultsEl = document.getElementById('ladderResults');
     revealAllBtn = document.getElementById('revealAllBtn');
     rebuildBtn = document.getElementById('rebuildBtn');
     editLabelsBtn = document.getElementById('editLabelsBtn');
@@ -50,14 +52,6 @@
 
     UI.mountEntryPanel(document.getElementById('entryPanel'), { collapsible: true });
     UI.mountHistoryPanel(document.getElementById('historyPanel'));
-
-    var stepper = document.getElementById('ladderWinnerStepper');
-    stepper.querySelector('[data-act="minus"]').addEventListener('click', function () {
-      changeWinners(-1);
-    });
-    stepper.querySelector('[data-act="plus"]').addEventListener('click', function () {
-      changeWinners(1);
-    });
 
     revealAllBtn.addEventListener('click', revealAll);
     rebuildBtn.addEventListener('click', build);
@@ -102,18 +96,11 @@
     }
   }
 
-  function effectiveWinners(count) {
-    var s = Store.getSettings().ladder;
-    return Math.min(Math.max(1, s.winners), Math.max(1, count - 1));
-  }
-
-  function changeWinners(dir) {
-    if (n < 2) return;
-    var s = Store.getSettings().ladder;
-    var base = s.labels ? 1 : effectiveWinners(n);
-    var next = Math.min(Math.max(1, base + dir), n - 1);
-    Store.patchSettings('ladder', { winners: next, labels: null });
-    build();
+  /* 기본 결과: 당첨 1개 + 나머지 꽝 (변경은 '결과 수정'으로) */
+  function defaultLabels(count) {
+    var out = [];
+    for (var i = 0; i < count; i++) out.push(i === 0 ? '당첨' : '꽝');
+    return out;
   }
 
   /* ---------------- 게임 생성 ---------------- */
@@ -123,14 +110,16 @@
     n = players.length;
     anims = [];
     logged = false;
+    revealOrder = [];
 
     var s = Store.getSettings().ladder;
     var custom = s.labels && s.labels.length === n ? s.labels.slice() : null;
 
-    updateControls(custom);
+    updateControls();
 
     if (n < 2 || n > MAX_PLAYERS) {
       innerEl.hidden = true;
+      resultsEl.hidden = true;
       noticeEl.hidden = false;
       noticeEl.textContent =
         n < 2
@@ -144,33 +133,29 @@
     hintEl.textContent = '위쪽 이름을 클릭하면 그 사람의 경로가 공개됩니다.';
 
     /* 결과 문구 구성 후 셔플 */
-    var labelSet;
-    if (custom) {
-      labelSet = custom;
-    } else {
-      var w = effectiveWinners(n);
-      labelSet = [];
-      for (var i = 0; i < n; i++) labelSet.push(i < w ? '당첨' : '꽝');
-    }
-    bottomLabels = shuffleArray(labelSet);
+    bottomLabels = shuffleArray(custom || defaultLabels(n));
 
     /* 가로줄 생성 */
     H = Math.min(16, Math.max(10, n + 4));
     genRungs();
 
-    /* 결과 사전 계산 */
+    /* 결과 사전 계산 + 슬롯 주인 역매핑 */
     outcomes = [];
-    for (var p = 0; p < n; p++) outcomes.push(trace(p));
+    slotOwner = new Array(n);
+    for (var p = 0; p < n; p++) {
+      outcomes.push(trace(p));
+      slotOwner[outcomes[p]] = p;
+    }
 
     revealedPlayers = new Array(n).fill(false);
     revealedSlots = new Array(n).fill(false);
 
+    renderResults();
     layout();
   }
 
-  function updateControls(custom) {
+  function updateControls() {
     var enabled = n >= 2 && n <= MAX_PLAYERS;
-    stepperValue.textContent = custom ? '커스텀' : '당첨 ' + (enabled ? effectiveWinners(n) : 1) + '개';
     revealAllBtn.disabled = !enabled;
     rebuildBtn.disabled = !enabled;
     editLabelsBtn.disabled = !enabled;
@@ -291,12 +276,23 @@
   function applySlotState(div, slot) {
     if (revealedSlots[slot]) {
       var label = bottomLabels[slot];
-      div.textContent = label;
-      div.title = label;
+      var owner = players[slotOwner[slot]];
+      var ownerName = owner ? owner.name : '';
+      div.textContent = '';
+      var nameEl = document.createElement('span');
+      nameEl.className = 'lr-slot-owner';
+      nameEl.textContent = ownerName;
+      var labelEl = document.createElement('span');
+      labelEl.className = 'lr-slot-label';
+      labelEl.textContent = label;
+      div.appendChild(nameEl);
+      div.appendChild(labelEl);
+      div.title = ownerName + ' → ' + label;
       div.classList.add('revealed');
       if (label === '당첨') div.classList.add('win');
     } else {
       div.textContent = '?';
+      div.title = '';
       div.classList.remove('revealed', 'win');
     }
   }
@@ -348,34 +344,56 @@
   function finishAnim(a) {
     revealedPlayers[a.i] = true;
     revealedSlots[outcomes[a.i]] = true;
+    revealOrder.push(a.i);
     refreshName(a.i);
     refreshSlot(outcomes[a.i]);
+    renderResults();
     maybeLog();
   }
 
+  /* 공개된 순서대로 "누가 → 무엇" 목록 */
+  function renderResults() {
+    resultsEl.innerHTML = '';
+    if (!revealOrder.length) {
+      resultsEl.hidden = true;
+      return;
+    }
+    resultsEl.hidden = false;
+    revealOrder.forEach(function (i) {
+      var label = bottomLabels[outcomes[i]];
+      var row = document.createElement('div');
+      row.className = 'lr-row' + (label === '당첨' ? ' win' : '');
+
+      var dot = document.createElement('span');
+      dot.className = 'entry-dot';
+      dot.style.setProperty('--dot', UI.wheelColorVar(i));
+      row.appendChild(dot);
+
+      var name = document.createElement('strong');
+      name.textContent = players[i].name;
+      row.appendChild(name);
+
+      row.appendChild(document.createTextNode(' → '));
+
+      var labelEl = document.createElement('span');
+      labelEl.className = 'lr-label';
+      labelEl.textContent = label;
+      row.appendChild(labelEl);
+
+      resultsEl.appendChild(row);
+    });
+  }
+
+  /* 전원 공개 시 모두의 결과를 기록에 남긴다 (사다리는 팀 나누기 용도가 많음) */
   function maybeLog() {
     if (logged) return;
     if (!revealedPlayers.every(Boolean)) return;
     logged = true;
 
-    var isAuto = bottomLabels.every(function (l) {
-      return l === '당첨' || l === '꽝';
+    var pairs = players.map(function (p, i) {
+      return p.name + '→' + bottomLabels[outcomes[i]];
     });
-    var text;
-    if (isAuto) {
-      var winners = [];
-      players.forEach(function (p, i) {
-        if (bottomLabels[outcomes[i]] === '당첨') winners.push(p.name);
-      });
-      text = '당첨: ' + (winners.length ? winners.join(', ') : '없음');
-    } else {
-      var pairs = players.map(function (p, i) {
-        return p.name + '→' + bottomLabels[outcomes[i]];
-      });
-      text = pairs.slice(0, 3).join(', ');
-      if (pairs.length > 3) text += ' 외 ' + (pairs.length - 3) + '명';
-    }
-    Store.logHistory('ladder', text);
+    Store.logHistory('ladder', pairs.join(', '));
   }
 
   /* ---------------- 경로 계산 ---------------- */
@@ -521,14 +539,7 @@
     labelsInputs.innerHTML = '';
 
     var s = Store.getSettings().ladder;
-    var current;
-    if (s.labels && s.labels.length === n) {
-      current = s.labels.slice();
-    } else {
-      var w = effectiveWinners(n);
-      current = [];
-      for (var i = 0; i < n; i++) current.push(i < w ? '당첨' : '꽝');
-    }
+    var current = s.labels && s.labels.length === n ? s.labels.slice() : defaultLabels(n);
 
     current.forEach(function (label) {
       var input = document.createElement('input');
