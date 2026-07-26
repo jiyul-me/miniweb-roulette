@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제비뽑기 - 온라인 랜덤 뽑기</title>
+    <meta name="description" content="온라인 제비뽑기. 참가자 수만큼 카드가 만들어지고, 차례대로 한 장씩 뒤집어 당첨을 확인하세요. 당첨 개수 설정 가능한 무료 랜덤 뽑기.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="제비뽑기 - 온라인 랜덤 뽑기">
+    <meta property="og:description" content="차례대로 카드를 뒤집어 당첨 확인. 당첨 개수 설정 가능한 무료 온라인 제비뽑기.">
+    <meta property="og:url" content="https://roulette.milomiso.com/lots.html">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4f8">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1117">
+    <link rel="canonical" href="https://roulette.milomiso.com/lots.html">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js"></script>
+    <script defer src="js/storage.js"></script>
+    <script defer src="js/ui.js"></script>
+    <script defer src="js/lots.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7277107475599201" crossorigin="anonymous"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1GHWBY4RWK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1GHWBY4RWK');
+    </script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <nav class="tabs" aria-label="추첨 도구 선택">
+                <a href="./" class="tab">돌림판</a>
+                <a href="ladder.html" class="tab">사다리타기</a>
+                <a href="lots.html" class="tab active" aria-current="page">제비뽑기</a>
+            </nav>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="라이트/다크 모드 전환">
+                <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="page">
+        <h1 class="page-title">제비뽑기</h1>
+        <p class="page-subtitle">차례대로 카드를 한 장씩 뒤집어 당첨을 확인하세요</p>
+
+        <div class="layout-stack">
+            <section class="card" aria-label="제비뽑기 게임">
+                <div class="tool-controls">
+                    <div class="stepper" id="lotsWinnerStepper">
+                        <button type="button" data-act="minus" aria-label="당첨 개수 줄이기">−</button>
+                        <span class="stepper-value" id="lotsWinnerValue">당첨 1개</span>
+                        <button type="button" data-act="plus" aria-label="당첨 개수 늘리기">+</button>
+                    </div>
+                    <div class="spacer"></div>
+                    <button id="redealBtn" class="btn btn-primary btn-sm" type="button">다시 하기</button>
+                </div>
+
+                <p class="turn-banner" id="turnBanner" aria-live="polite"></p>
+                <div class="cards-grid" id="cardsGrid"></div>
+                <div class="tool-notice" id="lotsNotice" hidden></div>
+                <p class="hint" id="lotsHint"></p>
+            </section>
+
+            <div class="side-grid">
+                <div id="entryPanel"></div>
+                <div id="historyPanel"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">돌림판 · 사다리타기 · 제비뽑기 — roulette.milomiso.com</footer>
+
+    <dialog id="lotsResultDialog" aria-labelledby="lotsResultTitle">
+        <p class="dialog-label" id="lotsResultTitle">🎉 추첨 완료 🎉</p>
+        <p id="lotsResultText" class="winner-name"></p>
+        <div class="dialog-actions">
+            <button id="lotsAgainBtn" class="btn btn-primary" type="button">다시 하기</button>
+            <button id="lotsCloseBtn" class="btn btn-ghost" type="button">닫기</button>
+        </div>
+    </dialog>
+
+</body>
+</html>

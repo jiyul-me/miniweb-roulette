@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사다리타기 - 온라인 사다리 게임</title>
+    <meta name="description" content="온라인 사다리타기 게임. 이름을 입력하면 사다리가 자동으로 만들어지고, 한 명씩 타고 내려가며 결과를 확인하세요. 당첨 개수와 벌칙 문구도 자유롭게 설정.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="사다리타기 - 온라인 사다리 게임">
+    <meta property="og:description" content="이름만 입력하면 자동으로 사다리 완성. 당첨 개수·벌칙 설정, 경로 애니메이션까지 무료로.">
+    <meta property="og:url" content="https://roulette.milomiso.com/ladder.html">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4f8">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1117">
+    <link rel="canonical" href="https://roulette.milomiso.com/ladder.html">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js"></script>
+    <script defer src="js/storage.js"></script>
+    <script defer src="js/ui.js"></script>
+    <script defer src="js/ladder.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7277107475599201" crossorigin="anonymous"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1GHWBY4RWK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1GHWBY4RWK');
+    </script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <nav class="tabs" aria-label="추첨 도구 선택">
+                <a href="./" class="tab">돌림판</a>
+                <a href="ladder.html" class="tab active" aria-current="page">사다리타기</a>
+                <a href="lots.html" class="tab">제비뽑기</a>
+            </nav>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="라이트/다크 모드 전환">
+                <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="page">
+        <h1 class="page-title">사다리타기</h1>
+        <p class="page-subtitle">이름을 클릭하면 사다리를 타고 내려갑니다 — 결과는 끝까지 비밀</p>
+
+        <div class="layout-stack">
+            <section class="card" aria-label="사다리타기 게임">
+                <div class="tool-controls">
+                    <div class="stepper" id="ladderWinnerStepper">
+                        <button type="button" data-act="minus" aria-label="당첨 개수 줄이기">−</button>
+                        <span class="stepper-value" id="ladderWinnerValue">당첨 1개</span>
+                        <button type="button" data-act="plus" aria-label="당첨 개수 늘리기">+</button>
+                    </div>
+                    <button id="editLabelsBtn" class="btn btn-ghost btn-sm" type="button">결과 수정</button>
+                    <div class="spacer"></div>
+                    <button id="revealAllBtn" class="btn btn-ghost btn-sm" type="button">모두 공개</button>
+                    <button id="rebuildBtn" class="btn btn-primary btn-sm" type="button">다시 만들기</button>
+                </div>
+
+                <div class="ladder-scroll">
+                    <div class="ladder-inner" id="ladderInner">
+                        <div class="ladder-row" id="ladderTop"></div>
+                        <canvas id="ladderCanvas"></canvas>
+                        <div class="ladder-row" id="ladderBottom"></div>
+                    </div>
+                </div>
+                <div class="tool-notice" id="ladderNotice" hidden></div>
+                <p class="hint" id="ladderHint"></p>
+            </section>
+
+            <div class="side-grid">
+                <div id="entryPanel"></div>
+                <div id="historyPanel"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">돌림판 · 사다리타기 · 제비뽑기 — roulette.milomiso.com</footer>
+
+    <dialog id="labelsDialog" aria-labelledby="labelsDialogTitle">
+        <p class="dialog-label" id="labelsDialogTitle">결과 문구 수정</p>
+        <div class="dialog-body" id="labelsInputs"></div>
+        <div class="dialog-actions">
+            <button id="labelsSaveBtn" class="btn btn-primary" type="button">저장하고 새 사다리 만들기</button>
+            <button id="labelsResetBtn" class="btn btn-ghost" type="button">당첨/꽝 기본으로</button>
+            <button id="labelsCancelBtn" class="btn btn-ghost" type="button">취소</button>
+        </div>
+    </dialog>
+
+</body>
+</html>

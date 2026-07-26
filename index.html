@@ -3,445 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>돌림판</title>
-    <style>
-        /* --- 기본 스타일 --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .main-title {
-            text-align: center;
-            width: 100%;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 2.5rem;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 40px;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        /* --- 룰렛 영역 --- */
-        .roulette-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 300px;
-            max-width: 500px;
-        }
-        
-        .roulette-container {
-            position: relative;
-            width: 100%;
-            padding-top: 100%; /* 1:1 비율 유지 */
-            margin-bottom: 20px;
-        }
-
-        .pointer {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 30px solid #E87A90;
-            z-index: 10;
-            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
-        }
-
-        #rouletteCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-
-        #spinButton {
-            background-color: #007BFF; 
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        #spinButton:hover {
-            background-color: #0056b3;
-        }
-
-        #spinButton:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
-
-        /* --- 당첨 결과 표시 스타일 --- */
-        #winnerDisplay {
-            margin-top: 20px;
-            padding: 15px 25px;
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            border-radius: 8px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-align: center;
-            min-width: 250px;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        #winnerDisplay.show {
-            opacity: 1;
-        }
-
-        /* --- 설정 영역 --- */
-        .controls-section {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .controls-section h2 {
-            text-align: center;
-            margin-top: 0;
-            color: #2c3e50;
-        }
-
-        .control-group {
-            margin-bottom: 25px;
-        }
-
-        .control-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        /* 슬라이더 */
-        input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
-        
-        input[type="range"]:disabled {
-            cursor: not-allowed;
-        }
-
-        #playerCountDisplay {
-            font-weight: bold;
-            color: #007BFF;
-            font-size: 1.1rem;
-        }
-
-        /* 이름 입력 필드 */
-        #nameInputs {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        #nameInputs input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box; 
-            font-size: 1rem;
-        }
-        
-        #nameInputs input[type="text"]::placeholder {
-            color: #aaa;
-        }
-        
-        /* 반응형 */
-        @media (max-width: 800px) {
-            .main-title {
-                font-size: 2rem;
-            }
-            .container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .roulette-section, .controls-section {
-                width: 100%;
-                max-width: 500px;
-            }
-            .roulette-section {
-                order: 1; 
-            }
-            .controls-section {
-                order: 2; 
-            }
-        }
-    </style>
+    <title>돌림판 - 온라인 랜덤 추첨 룰렛</title>
+    <meta name="description" content="이름을 입력하고 돌림판을 돌려 공정하게 추첨하세요. 무제한 참가자, 가중치 설정, 당첨자 제외 재추첨, 자동 저장까지 되는 무료 온라인 룰렛.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="돌림판 - 온라인 랜덤 추첨 룰렛">
+    <meta property="og:description" content="이름을 입력하고 돌림판을 돌려 공정하게 추첨하세요. 가중치, 당첨자 제외 재추첨, 자동 저장 지원.">
+    <meta property="og:url" content="https://roulette.milomiso.com/">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4f8">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f1117">
+    <link rel="canonical" href="https://roulette.milomiso.com/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js"></script>
+    <script defer src="js/storage.js"></script>
+    <script defer src="js/ui.js"></script>
+    <script defer src="js/roulette.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7277107475599201" crossorigin="anonymous"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1GHWBY4RWK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1GHWBY4RWK');
+    </script>
 </head>
 <body>
 
-    <h1 class="main-title">돌림판</h1>
-
-    <div class="container">
-        <div class="roulette-section">
-            <div class="roulette-container">
-                <div class="pointer"></div>
-                <canvas id="rouletteCanvas" width="500" height="500"></canvas>
-            </div>
-            <button id="spinButton">돌리기!</button>
-            <div id="winnerDisplay"></div>
+    <header class="site-header">
+        <div class="header-inner">
+            <nav class="tabs" aria-label="추첨 도구 선택">
+                <a href="./" class="tab active" aria-current="page">돌림판</a>
+                <a href="ladder.html" class="tab">사다리타기</a>
+                <a href="lots.html" class="tab">제비뽑기</a>
+            </nav>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="라이트/다크 모드 전환">
+                <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+            </button>
         </div>
+    </header>
 
-        <div class="controls-section">
-            <h2>돌림판 설정</h2>
-            
-            <div class="control-group">
-                <label for="playerCount">참여 이름: <span id="playerCountDisplay">3명</span></label>
-                <input type="range" id="playerCount" min="2" max="10" value="3">
-            </div>
+    <main class="page">
+        <h1 class="page-title">돌림판</h1>
+        <p class="page-subtitle">이름을 넣고 돌리면 끝 — 공정한 랜덤 추첨 룰렛</p>
 
-            <div class="control-group">
-                <label>이름 입력</label>
-                <div id="nameInputs">
-                    </div>
+        <div class="layout-split">
+            <section class="card wheel-card" aria-label="돌림판">
+                <div class="wheel-wrap">
+                    <div class="wheel-pointer" aria-hidden="true"></div>
+                    <canvas id="wheelCanvas"></canvas>
+                    <button id="spinBtn" class="wheel-center-btn" type="button">돌리기</button>
+                </div>
+                <p id="wheelHint" class="hint wheel-hint" aria-live="polite"></p>
+            </section>
+
+            <div class="side-col">
+                <div id="entryPanel"></div>
+                <div id="historyPanel"></div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // DOM 요소
-            const canvas = document.getElementById('rouletteCanvas');
-            const ctx = canvas.getContext('2d');
-            const spinButton = document.getElementById('spinButton');
-            const slider = document.getElementById('playerCount');
-            const playerCountDisplay = document.getElementById('playerCountDisplay');
-            const nameInputsContainer = document.getElementById('nameInputs');
-            const winnerDisplay = document.getElementById('winnerDisplay');
+    <footer class="site-footer">돌림판 · 사다리타기 · 제비뽑기 — roulette.milomiso.com</footer>
 
-            // 기본값
-            const defaultFlowerNames = [
-                '장미', '백합', '튤립', '국화', '민들레', '해바라기', '코스모스', '진달래', '벚꽃', '수국'
-            ];
-            
-            // 룰렛 색상
-            const colors = [
-                '#00BFFF', '#4169E1', '#FFEA00', '#8BD346', '#8A2BE2',
-                '#FFB627', '#FF69B4', '#A020F0', '#FF1493', '#FF6F61'
-            ];
+    <dialog id="winnerDialog" aria-labelledby="winnerName">
+        <p class="dialog-label">🎉 당첨 🎉</p>
+        <p id="winnerName" class="winner-name" aria-live="assertive"></p>
+        <div class="dialog-actions">
+            <button id="removeRespinBtn" class="btn btn-primary" type="button">제외하고 다시 돌리기</button>
+            <button id="closeWinnerBtn" class="btn btn-ghost" type="button">닫기</button>
+        </div>
+    </dialog>
 
-            let options = [];
-            let currentRotation = 0;
-            let isSpinning = false;
-            let winnerDisplayTimeout;
-
-            // 1. 인원 수에 맞게 이름 입력 필드 생성
-            function generateNameInputs(count) {
-                nameInputsContainer.innerHTML = ''; 
-                options = []; 
-
-                for (let i = 0; i < count; i++) {
-                    const defaultName = defaultFlowerNames[i % defaultFlowerNames.length];
-                    options.push(defaultName); 
-
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.placeholder = defaultName;
-                    input.dataset.index = i;
-                    
-                    input.addEventListener('input', (e) => {
-                        options[i] = e.target.value || e.target.placeholder;
-                        drawRouletteWheel(); 
-                    });
-
-                    nameInputsContainer.appendChild(input);
-                }
-            }
-
-            // 2. 룰렛 그리기 (*** 수정된 부분 ***)
-            function drawRouletteWheel() {
-                const numOptions = options.length;
-                if (numOptions === 0) return;
-
-                const arcSize = (2 * Math.PI) / numOptions;
-                const canvasSize = canvas.width;
-                const center = canvasSize / 2;
-                const radius = center - 20;
-                const startDrawingAngle = -Math.PI / 2; 
-
-                ctx.clearRect(0, 0, canvasSize, canvasSize);
-                
-                const fontSize = 16;
-                ctx.font = `bold ${fontSize}px Arial`;
-
-                for (let i = 0; i < numOptions; i++) {
-                    const segmentStartAngle = startDrawingAngle + i * arcSize;
-
-                    // 1) 세그먼트(조각) 그리기
-                    ctx.beginPath();
-                    ctx.fillStyle = colors[i % colors.length];
-                    ctx.moveTo(center, center);
-                    ctx.arc(center, center, radius, segmentStartAngle, segmentStartAngle + arcSize);
-                    ctx.lineTo(center, center);
-                    ctx.fill();
-
-                    ctx.save();
-                    
-                    // 2) 텍스트를 위한 좌표계 설정
-                    const textAngle = segmentStartAngle + arcSize / 2;
-                    const textX = center + (radius / 1.5) * Math.cos(textAngle);
-                    const textY = center + (radius / 1.5) * Math.sin(textAngle);
-                    
-                    ctx.translate(textX, textY);
-                    ctx.rotate(textAngle + Math.PI / 2); 
-
-                    // 3) 텍스트 그리기 (배경 포함)
-                    const text = options[i];
-                    const textMetrics = ctx.measureText(text);
-                    const textWidth = textMetrics.width;
-                    const textHeight = fontSize * 1.2; // 폰트 크기 기반 높이
-
-                    // [수정] 패딩 값 정의
-                    const hPadding = 10; // 좌우 여백 (양쪽 합 10)
-                    const vPadding = 8;  // 상하 여백 (양쪽 합 8)
-                    const borderRadius = 5; // 모서리 둥글기 5px
-
-                    const rectWidth = textWidth + hPadding;
-                    const rectHeight = textHeight + vPadding;
-                    const rectX = -rectWidth / 2;
-                    const rectY = -rectHeight / 2; // (0,0)을 기준으로 중앙 배치
-                    
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    // [수정] fillRect -> roundRect로 변경
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                    ctx.beginPath(); // 경로 시작
-                    ctx.roundRect(rectX, rectY, rectWidth, rectHeight, borderRadius);
-                    ctx.fill(); // 채우기
-
-                    // 텍스트 그리기 (흰색)
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillText(text, 0, 0); // (0,0)에 정확히 중앙 정렬
-
-                    ctx.restore();
-                }
-            }
-
-            // 3. 룰렛 돌리기
-            function spin() {
-                if (isSpinning) return;
-                isSpinning = true;
-                spinButton.disabled = true;
-                slider.disabled = true; 
-                
-                clearTimeout(winnerDisplayTimeout);
-                winnerDisplay.classList.remove('show');
-                winnerDisplay.textContent = '';
-
-
-                const randomExtraRotation = Math.random() * 360;
-                const totalRotation = 360 * 5 + randomExtraRotation;
-                const newRotation = currentRotation + totalRotation;
-
-                canvas.style.transition = 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)';
-                canvas.style.transform = `rotate(${newRotation}deg)`;
-
-                setTimeout(() => {
-                    canvas.style.transition = 'none';
-                    
-                    const finalAngle = newRotation % 360;
-                    currentRotation = finalAngle;
-                    canvas.style.transform = `rotate(${finalAngle}deg)`;
-
-                    const numOptions = options.length;
-                    const arcSizeDeg = 360 / numOptions;
-                    const pointerAngle = (360 - finalAngle) % 360; 
-                    const winningIndex = Math.floor(pointerAngle / arcSizeDeg);
-                    
-                    winnerDisplay.textContent = `🎉 ${options[winningIndex]} 님 당첨! 🎉`;
-                    winnerDisplay.classList.add('show');
-                    
-                    winnerDisplayTimeout = setTimeout(() => {
-                        winnerDisplay.classList.remove('show');
-                    }, 5000); 
-
-                    isSpinning = false;
-                    spinButton.disabled = false;
-                    slider.disabled = false; 
-                    
-                }, 5000); 
-            }
-
-            // --- 이벤트 리스너 연결 ---
-
-            // 슬라이더 조작 시
-            slider.addEventListener('input', (e) => {
-                canvas.style.transition = 'none';
-                canvas.style.transform = 'rotate(0deg)';
-                currentRotation = 0;
-                
-                const count = parseInt(e.target.value);
-                playerCountDisplay.textContent = `${count}명`;
-                generateNameInputs(count);
-                drawRouletteWheel();
-
-                clearTimeout(winnerDisplayTimeout);
-                winnerDisplay.classList.remove('show');
-                winnerDisplay.textContent = '';
-            });
-
-            // 돌리기 버튼 클릭 시
-            spinButton.addEventListener('click', spin);
-
-            // --- 초기화 실행 ---
-            function init() {
-                const initialCount = parseInt(slider.value);
-                playerCountDisplay.textContent = `${initialCount}명`;
-                generateNameInputs(initialCount);
-                drawRouletteWheel();
-            }
-
-            init();
-        });
-    </script>
 </body>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1GHWBY4RWK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-1GHWBY4RWK');
-</script>
 </html>
-
